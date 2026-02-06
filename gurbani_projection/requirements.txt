@@ -1,0 +1,19 @@
+# Gurbani Projection System Dependencies
+
+# Web server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# WebSocket support (included with fastapi)
+websockets>=12.0
+
+# STT engines (install as needed)
+# vosk>=0.3.45        # Offline STT — pip install vosk
+# openai-whisper      # Cloud/local STT — pip install openai-whisper
+
+# Audio processing (for server-side mic capture)
+# sounddevice>=0.4.6  # pip install sounddevice
+# numpy>=1.24.0       # Required by sounddevice and whisper
+
+# Testing
+pytest>=7.4.0

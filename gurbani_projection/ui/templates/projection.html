@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurbani Projection</title>
+    <link rel="stylesheet" href="/static/css/projection.css">
+</head>
+<body>
+    <div class="projection-container">
+        <!-- Idle state display -->
+        <div id="idle-display" class="idle-display">
+            <div class="ik-onkar">&#x0A74;</div>
+            <div class="waiting-text">Awaiting Hukam</div>
+        </div>
+
+        <!-- Active verse display -->
+        <div id="verse-display" style="display: none; width: 100%; text-align: center;">
+            <div class="khanda-divider" style="margin: 0 auto 3rem;"></div>
+
+            <div id="gurmukhi-verse" class="gurmukhi-verse"></div>
+
+            <div class="verse-divider" style="margin: 2rem auto;"></div>
+
+            <div id="translation-verse" class="translation-verse"></div>
+
+            <div id="transliteration-verse" class="transliteration-verse hidden"></div>
+        </div>
+
+        <!-- Section indicator -->
+        <div id="section-indicator" class="section-indicator"></div>
+
+        <!-- Status indicator -->
+        <div class="status-indicator">
+            <div id="status-dot" class="status-dot"></div>
+            <span id="status-text" class="status-text"></span>
+        </div>
+
+        <!-- Confidence bar -->
+        <div class="confidence-bar">
+            <div id="confidence-fill" class="fill"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/projection.js"></script>
+</body>
+</html>

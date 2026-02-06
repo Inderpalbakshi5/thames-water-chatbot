@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gurbani Projection - Admin</title>
+    <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body>
+    <!-- Header -->
+    <div class="admin-header">
+        <h1>Gurbani Projection Control</h1>
+        <div class="connection-badge">
+            <div id="connection-dot" class="connection-dot"></div>
+            <span id="connection-text">Disconnected</span>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <!-- Bani Selection -->
+        <div class="card">
+            <div class="card-header">Bani Selection</div>
+            <select id="bani-select" class="bani-select">
+                <option value="">-- Select Bani --</option>
+                <option value="sukhmani_sahib">Sukhmani Sahib</option>
+                <option value="anand_sahib">Anand Sahib</option>
+                <option value="japji_sahib">Japji Sahib</option>
+                <option value="rehras_sahib">Rehras Sahib</option>
+            </select>
+            <div class="btn-group">
+                <button id="btn-load-bani" class="btn btn-primary" disabled>Load Bani</button>
+            </div>
+        </div>
+
+        <!-- System State & Controls -->
+        <div class="card">
+            <div class="card-header">Controls</div>
+            <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;">
+                <span>State:</span>
+                <span id="state-badge" class="state-badge idle">Idle</span>
+            </div>
+            <div class="btn-group">
+                <button id="btn-start" class="btn btn-success" disabled>Start Listening</button>
+                <button id="btn-stop" class="btn btn-danger" disabled>Stop</button>
+            </div>
+            <div class="btn-group" style="margin-top: 0.5rem;">
+                <button id="btn-next" class="btn btn-secondary" disabled>Next Verse</button>
+                <button id="btn-resume" class="btn btn-secondary" disabled>Resume</button>
+            </div>
+        </div>
+
+        <!-- Confidence & Audio -->
+        <div class="card">
+            <div class="card-header">Audio & Confidence</div>
+
+            <div class="audio-meter">
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">Level:</span>
+                <div class="audio-bars" id="audio-bars">
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                    <div class="audio-bar" style="height: 5px;"></div>
+                </div>
+            </div>
+
+            <div class="confidence-meter">
+                <div class="confidence-label">
+                    <span>Match Confidence</span>
+                    <span id="confidence-value">0%</span>
+                </div>
+                <div class="confidence-bar">
+                    <div id="confidence-fill" class="confidence-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 0.8rem;">
+                <div class="card-header" style="margin-bottom: 0.3rem;">Last STT Output</div>
+                <div id="stt-output" class="stt-output">Waiting for audio...</div>
+            </div>
+        </div>
+
+        <!-- Section Navigator -->
+        <div class="card">
+            <div class="card-header">Manual Navigation</div>
+            <div class="section-nav">
+                <span style="font-size: 0.85rem;">Jump to Section:</span>
+                <input type="number" id="section-input" min="1" value="1" />
+                <button id="btn-jump" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem;" disabled>Go</button>
+            </div>
+            <div style="margin-top: 0.8rem; font-size: 0.8rem; color: var(--text-secondary);">
+                <span>Current: Section <span id="current-section">-</span></span>
+                <span> / <span id="total-sections">-</span></span>
+                <span style="margin-left: 1rem;">Verses: <span id="total-verses">-</span></span>
+            </div>
+        </div>
+
+        <!-- Current Verse Preview -->
+        <div class="card full-width">
+            <div class="card-header">Current Verse</div>
+            <div id="verse-preview" class="verse-preview">
+                <div class="gurmukhi" id="preview-gurmukhi">No verse selected</div>
+                <div class="translation" id="preview-translation"></div>
+                <div class="meta" id="preview-meta"></div>
+            </div>
+        </div>
+
+        <!-- Browser-based STT (optional) -->
+        <div class="card full-width">
+            <div class="card-header">Browser Speech Recognition (Fallback)</div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.8rem;">
+                Use the browser's built-in speech recognition as a fallback when Vosk is not available.
+                Requires Chrome/Edge and microphone permission.
+            </p>
+            <div class="btn-group">
+                <button id="btn-browser-stt" class="btn btn-secondary">Enable Browser STT</button>
+            </div>
+            <div id="browser-stt-status" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

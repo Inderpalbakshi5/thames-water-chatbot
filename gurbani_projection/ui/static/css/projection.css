@@ -1,0 +1,247 @@
+/* Gurbani Projection Display Styles
+ *
+ * Designed for projector output: high contrast, large text,
+ * smooth transitions, respectful and clean layout.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Gurmukhi:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #0d0d1a;
+    --bg-secondary: #141428;
+    --gurmukhi-color: #f5f0e1;
+    --gurmukhi-glow: rgba(245, 240, 225, 0.08);
+    --translation-color: #9e9b8e;
+    --accent-gold: #d4a843;
+    --accent-gold-dim: rgba(212, 168, 67, 0.3);
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --transition-speed: 0.6s;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-primary);
+    color: var(--gurmukhi-color);
+    font-family: 'Inter', sans-serif;
+    cursor: none;
+}
+
+/* Main container */
+.projection-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 4rem 6rem;
+    position: relative;
+}
+
+/* Subtle gradient overlay */
+.projection-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(212, 168, 67, 0.03) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+/* Top decorative line */
+.khanda-divider {
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--accent-gold-dim),
+        transparent
+    );
+    margin-bottom: 3rem;
+    opacity: 0.6;
+}
+
+/* Gurmukhi verse display */
+.gurmukhi-verse {
+    font-family: 'Noto Sans Gurmukhi', serif;
+    font-size: 3.5rem;
+    font-weight: 600;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--gurmukhi-color);
+    text-shadow: 0 0 40px var(--gurmukhi-glow);
+    max-width: 90%;
+    padding: 1rem 0;
+    transition: opacity var(--transition-speed) ease-in-out;
+    min-height: 8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gurmukhi-verse.transitioning {
+    opacity: 0;
+}
+
+/* Divider between Gurmukhi and translation */
+.verse-divider {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--border-subtle),
+        var(--accent-gold-dim),
+        var(--border-subtle),
+        transparent
+    );
+    margin: 2rem 0;
+}
+
+/* English translation */
+.translation-verse {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.8;
+    text-align: center;
+    color: var(--translation-color);
+    max-width: 80%;
+    padding: 0.5rem 0;
+    transition: opacity var(--transition-speed) ease-in-out;
+    min-height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.translation-verse.transitioning {
+    opacity: 0;
+}
+
+.translation-verse.hidden {
+    display: none;
+}
+
+/* Transliteration (optional) */
+.transliteration-verse {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    font-style: italic;
+    color: rgba(158, 155, 142, 0.6);
+    margin-top: 0.5rem;
+    transition: opacity var(--transition-speed) ease-in-out;
+}
+
+.transliteration-verse.hidden {
+    display: none;
+}
+
+/* Section/Pauri indicator */
+.section-indicator {
+    position: absolute;
+    bottom: 2rem;
+    right: 3rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.15);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+}
+
+/* Status indicator (bottom left, very subtle) */
+.status-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.2;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4a4a4a;
+    transition: background 0.3s;
+}
+
+.status-dot.listening {
+    background: #4ade80;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.status-dot.matched {
+    background: var(--accent-gold);
+}
+
+.status-dot.paused {
+    background: #f59e0b;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.status-text {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: 'Inter', sans-serif;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+/* Idle state — show Ik Onkar or waiting message */
+.idle-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.3;
+}
+
+.idle-display .ik-onkar {
+    font-family: 'Noto Sans Gurmukhi', serif;
+    font-size: 5rem;
+    color: var(--accent-gold);
+    margin-bottom: 1rem;
+}
+
+.idle-display .waiting-text {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+/* Confidence bar (very subtle, bottom) */
+.confidence-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+}
+
+.confidence-bar .fill {
+    height: 100%;
+    background: var(--accent-gold-dim);
+    transition: width 0.3s ease;
+    width: 0%;
+}
