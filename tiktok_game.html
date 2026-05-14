@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Drop It! 💧 Thames Water Tap Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: #010101;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 390px;
+      height: 100vh;
+      max-height: 844px;
+      position: relative;
+      background: linear-gradient(180deg, #0a0a1a 0%, #001a33 50%, #003355 100%);
+      overflow: hidden;
+      border-radius: 0;
+      box-shadow: 0 0 60px rgba(0,180,255,0.3);
+    }
+
+    /* ── SCREENS ── */
+    .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.3s; }
+    .screen.hidden { opacity: 0; pointer-events: none; }
+
+    /* ── START SCREEN ── */
+    #start-screen {
+      gap: 20px;
+      background: linear-gradient(180deg, #0d0d2b 0%, #001840 100%);
+    }
+
+    .tiktok-logo {
+      font-size: 14px;
+      color: #aaa;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: -10px;
+    }
+
+    .game-title {
+      font-size: 56px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00f2fe, #4facfe, #00f2fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+      line-height: 1.1;
+      text-shadow: none;
+      filter: drop-shadow(0 0 20px rgba(0,200,255,0.6));
+    }
+
+    .game-subtitle {
+      font-size: 16px;
+      color: #80cfff;
+      text-align: center;
+      max-width: 260px;
+      line-height: 1.5;
+    }
+
+    .drop-preview {
+      display: flex;
+      gap: 12px;
+      margin: 8px 0;
+    }
+
+    .drop-preview span {
+      font-size: 36px;
+      animation: float 2s ease-in-out infinite;
+    }
+    .drop-preview span:nth-child(2) { animation-delay: 0.3s; }
+    .drop-preview span:nth-child(3) { animation-delay: 0.6s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .difficulty-label {
+      font-size: 13px;
+      color: #80cfff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: -8px;
+    }
+
+    .difficulty-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .diff-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 2px solid #1a4a6e;
+      background: transparent;
+      color: #80cfff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .diff-btn.active {
+      border-color: #00c8ff;
+      background: rgba(0,200,255,0.15);
+      color: #00f2fe;
+    }
+
+    .start-btn {
+      width: 200px;
+      height: 56px;
+      border-radius: 28px;
+      border: none;
+      background: linear-gradient(135deg, #00c8ff, #0066ff);
+      color: white;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 0 30px rgba(0,150,255,0.5);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .start-btn:active { transform: scale(0.96); box-shadow: 0 0 15px rgba(0,150,255,0.3); }
+
+    .how-to {
+      font-size: 13px;
+      color: #4a7a9b;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ── GAME SCREEN ── */
+    #game-screen { padding: 0; justify-content: flex-start; }
+
+    #hud {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 8px;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+
+    #score-display {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    #score-label {
+      font-size: 11px;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #score {
+      font-size: 36px;
+      font-weight: 900;
+      color: #00f2fe;
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(0,200,255,0.8);
+    }
+
+    #combo-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #combo {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ff4d4d;
+      text-shadow: 0 0 15px rgba(255,77,77,0.8);
+      min-height: 34px;
+    }
+
+    #combo-label {
+      font-size: 11px;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #timer-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    #timer-label {
+      font-size: 11px;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #timer {
+      font-size: 36px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    #timer.urgent { color: #ff4d4d; animation: pulse 0.5s infinite; }
+
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+    #arena {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      cursor: crosshair;
+      user-select: none;
+    }
+
+    /* ── TARGETS ── */
+    .target {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transform: scale(0);
+      animation: pop-in 0.2s forwards;
+      pointer-events: all;
+      z-index: 5;
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0) rotate(-20deg); }
+      70% { transform: scale(1.15) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .target .inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      position: relative;
+    }
+
+    .target .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.4);
+      animation: ring-shrink linear forwards;
+    }
+
+    @keyframes ring-shrink {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.2); opacity: 0; }
+    }
+
+    /* target types */
+    .target.drop .inner { background: radial-gradient(circle at 35% 35%, #4dd9ff, #0077cc); box-shadow: 0 0 20px rgba(0,180,255,0.6); }
+    .target.golden .inner { background: radial-gradient(circle at 35% 35%, #ffe566, #ff9900); box-shadow: 0 0 25px rgba(255,180,0,0.8); }
+    .target.bomb .inner { background: radial-gradient(circle at 35% 35%, #ff6666, #cc0000); box-shadow: 0 0 20px rgba(255,0,0,0.5); }
+
+    /* ── FLOATING SCORE TEXT ── */
+    .float-text {
+      position: absolute;
+      font-size: 22px;
+      font-weight: 900;
+      color: #00f2fe;
+      pointer-events: none;
+      z-index: 20;
+      text-shadow: 0 0 10px rgba(0,200,255,0.8);
+      animation: float-up 0.8s forwards;
+    }
+
+    .float-text.golden { color: #ffe566; text-shadow: 0 0 10px rgba(255,200,0,0.8); }
+    .float-text.miss   { color: #ff6666; font-size: 16px; text-shadow: 0 0 8px rgba(255,0,0,0.5); }
+    .float-text.bomb   { color: #ff4444; font-size: 26px; text-shadow: 0 0 15px rgba(255,0,0,0.8); }
+
+    @keyframes float-up {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      50%  { opacity: 1; transform: translateY(-30px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-60px) scale(0.8); }
+    }
+
+    /* ── SPLASH ── */
+    .splash {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 15;
+      animation: splash-out 0.4s forwards;
+    }
+
+    @keyframes splash-out {
+      0%   { transform: scale(0); opacity: 0.8; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+
+    /* ── MISS FLASH ── */
+    #miss-flash {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,0,0,0.15);
+      pointer-events: none;
+      z-index: 30;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    #miss-flash.active { opacity: 1; }
+
+    /* ── END SCREEN ── */
+    #end-screen {
+      gap: 16px;
+      background: linear-gradient(180deg, #0d0d2b 0%, #001840 100%);
+    }
+
+    .end-title {
+      font-size: 20px;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .final-score {
+      font-size: 80px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(0,200,255,0.6));
+      line-height: 1;
+    }
+
+    .final-score-label {
+      font-size: 14px;
+      color: #4a7a9b;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: -8px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .stat-card {
+      background: rgba(0,100,180,0.15);
+      border: 1px solid rgba(0,150,255,0.2);
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #00f2fe;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .rating {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+
+    .rating .emoji { font-size: 36px; display: block; margin-bottom: 4px; }
+
+    .end-buttons {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .share-btn {
+      flex: 1;
+      height: 50px;
+      border-radius: 25px;
+      border: none;
+      background: linear-gradient(135deg, #ff0050, #ff1a6e);
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(255,0,80,0.4);
+      transition: transform 0.1s;
+    }
+
+    .share-btn:active { transform: scale(0.97); }
+
+    .play-again-btn {
+      flex: 1;
+      height: 50px;
+      border-radius: 25px;
+      border: 2px solid #00c8ff;
+      background: transparent;
+      color: #00f2fe;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .play-again-btn:active { transform: scale(0.97); }
+
+    /* ── COUNTDOWN OVERLAY ── */
+    #countdown-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.7);
+      z-index: 50;
+      font-size: 120px;
+      font-weight: 900;
+      color: #00f2fe;
+      text-shadow: 0 0 60px rgba(0,200,255,0.9);
+    }
+
+    #countdown-overlay.hidden { display: none; }
+
+    /* ── PARTICLES / BG ── */
+    .bg-drop {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(0,150,255,0.04);
+      pointer-events: none;
+    }
+
+    #high-score-badge {
+      background: rgba(255,180,0,0.15);
+      border: 1px solid rgba(255,180,0,0.4);
+      border-radius: 12px;
+      padding: 6px 16px;
+      color: #ffe566;
+      font-size: 13px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Background ambient drops -->
+  <div id="bg"></div>
+
+  <!-- START -->
+  <div class="screen" id="start-screen">
+    <div class="tiktok-logo">TikTok Challenge</div>
+    <div class="game-title">DROP<br>IT!</div>
+    <div class="drop-preview">
+      <span>💧</span><span>⭐</span><span>💧</span>
+    </div>
+    <div class="game-subtitle">Tap the water drops before they vanish. Avoid the bombs!</div>
+
+    <div class="difficulty-label">Difficulty</div>
+    <div class="difficulty-buttons">
+      <button class="diff-btn" data-diff="easy">Easy</button>
+      <button class="diff-btn active" data-diff="normal">Normal</button>
+      <button class="diff-btn" data-diff="hard">Hard</button>
+    </div>
+
+    <button class="start-btn" id="start-btn">PLAY ▶</button>
+
+    <div id="best-display" style="display:none" id="high-score-badge"></div>
+
+    <div class="how-to">💧 Drop = +1 pt &nbsp;|&nbsp; ⭐ Golden = +5 pts<br>💣 Bomb = −3 pts &nbsp;|&nbsp; Combos multiply!</div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen hidden" id="game-screen">
+    <div id="hud">
+      <div id="score-display">
+        <div id="score-label">SCORE</div>
+        <div id="score">0</div>
+      </div>
+      <div id="combo-display">
+        <div id="combo"></div>
+        <div id="combo-label">COMBO</div>
+      </div>
+      <div id="timer-wrap">
+        <div id="timer-label">TIME</div>
+        <div id="timer">30</div>
+      </div>
+    </div>
+    <div id="arena">
+      <div id="miss-flash"></div>
+    </div>
+    <div id="countdown-overlay">3</div>
+  </div>
+
+  <!-- END -->
+  <div class="screen hidden" id="end-screen">
+    <div class="end-title">Game Over</div>
+    <div class="final-score" id="final-score">0</div>
+    <div class="final-score-label">points</div>
+    <div id="high-score-badge" style="display:none"></div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-hits">0</div>
+        <div class="stat-lbl">Drops Hit</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-misses">0</div>
+        <div class="stat-lbl">Misses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-golden">0</div>
+        <div class="stat-lbl">Golden Drops</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-combo">0</div>
+        <div class="stat-lbl">Best Combo</div>
+      </div>
+    </div>
+    <div class="rating" id="rating"></div>
+    <div class="end-buttons">
+      <button class="share-btn" id="share-btn">📤 Share</button>
+      <button class="play-again-btn" id="replay-btn">↩ Play Again</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────────────────
+  const DIFFICULTIES = {
+    easy:   { spawnInterval: 1200, targetLife: 2800, bombChance: 0.08, goldenChance: 0.08, maxTargets: 4 },
+    normal: { spawnInterval: 900,  targetLife: 2000, bombChance: 0.15, goldenChance: 0.10, maxTargets: 6 },
+    hard:   { spawnInterval: 600,  targetLife: 1400, bombChance: 0.22, goldenChance: 0.12, maxTargets: 8 },
+  };
+
+  const GAME_DURATION = 30;
+
+  // ── STATE ────────────────────────────────────────────────────────────────────
+  let state = {
+    score: 0, hits: 0, misses: 0, golden: 0, combo: 0, bestCombo: 0,
+    timeLeft: GAME_DURATION, running: false,
+    diff: 'normal',
+    targets: new Map(),
+  };
+
+  let spawnTimer, gameTimer, countdownTimer;
+
+  // ── DOM ──────────────────────────────────────────────────────────────────────
+  const $  = id => document.getElementById(id);
+  const startScreen = $('start-screen');
+  const gameScreen  = $('game-screen');
+  const endScreen   = $('end-screen');
+  const arena       = $('arena');
+  const countdown   = $('countdown-overlay');
+  const missFlash   = $('miss-flash');
+
+  // ── BACKGROUND AMBIENCE ──────────────────────────────────────────────────────
+  (function buildBg() {
+    const bg = $('bg');
+    for (let i = 0; i < 12; i++) {
+      const d = document.createElement('div');
+      d.className = 'bg-drop';
+      const s = 40 + Math.random() * 120;
+      d.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*90}%;top:${Math.random()*90}%;`;
+      bg.appendChild(d);
+    }
+  })();
+
+  // ── DIFFICULTY BUTTONS ───────────────────────────────────────────────────────
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.diff = btn.dataset.diff;
+    });
+  });
+
+  // ── HIGH SCORE ───────────────────────────────────────────────────────────────
+  function getBest() { return parseInt(localStorage.getItem('dropItBest') || '0'); }
+  function saveBest(s) { if (s > getBest()) { localStorage.setItem('dropItBest', s); return true; } return false; }
+
+  function refreshStartBest() {
+    const best = getBest();
+    const el = document.querySelector('#start-screen #best-display') || $('best-display');
+    if (best > 0 && el) {
+      el.textContent = `🏆 Best: ${best}`;
+      el.style.display = 'block';
+    }
+  }
+
+  // ── SHOW / HIDE SCREENS ──────────────────────────────────────────────────────
+  function showScreen(name) {
+    [startScreen, gameScreen, endScreen].forEach(s => s.classList.add('hidden'));
+    $(`${name}-screen`).classList.remove('hidden');
+  }
+
+  // ── COUNTDOWN → START ────────────────────────────────────────────────────────
+  $('start-btn').addEventListener('click', () => {
+    showScreen('game');
+    resetState();
+    runCountdown();
+  });
+
+  function runCountdown() {
+    countdown.classList.remove('hidden');
+    let n = 3;
+    countdown.textContent = n;
+    countdownTimer = setInterval(() => {
+      n--;
+      if (n === 0) {
+        countdown.textContent = 'GO!';
+        setTimeout(() => {
+          countdown.classList.add('hidden');
+          startGame();
+        }, 500);
+        clearInterval(countdownTimer);
+      } else {
+        countdown.textContent = n;
+      }
+    }, 700);
+  }
+
+  // ── GAME LOGIC ───────────────────────────────────────────────────────────────
+  function resetState() {
+    state = { score: 0, hits: 0, misses: 0, golden: 0, combo: 0, bestCombo: 0,
+              timeLeft: GAME_DURATION, running: false, diff: state.diff, targets: new Map() };
+    $('score').textContent = '0';
+    $('timer').textContent = GAME_DURATION;
+    $('timer').classList.remove('urgent');
+    $('combo').textContent = '';
+    arena.querySelectorAll('.target').forEach(t => t.remove());
+    arena.querySelectorAll('.float-text').forEach(t => t.remove());
+    arena.querySelectorAll('.splash').forEach(t => t.remove());
+  }
+
+  function startGame() {
+    state.running = true;
+    const cfg = DIFFICULTIES[state.diff];
+
+    spawnTimer = setInterval(spawnTarget, cfg.spawnInterval);
+
+    gameTimer = setInterval(() => {
+      state.timeLeft--;
+      $('timer').textContent = state.timeLeft;
+      if (state.timeLeft <= 5) $('timer').classList.add('urgent');
+      if (state.timeLeft <= 0) endGame();
+    }, 1000);
+  }
+
+  function endGame() {
+    state.running = false;
+    clearInterval(spawnTimer);
+    clearInterval(gameTimer);
+
+    // remove remaining targets
+    state.targets.forEach((data, el) => {
+      clearTimeout(data.timeout);
+      el.remove();
+    });
+    state.targets.clear();
+
+    showEndScreen();
+  }
+
+  // ── SPAWN TARGET ─────────────────────────────────────────────────────────────
+  let targetIdCounter = 0;
+
+  function spawnTarget() {
+    if (!state.running) return;
+    const cfg = DIFFICULTIES[state.diff];
+    if (state.targets.size >= cfg.maxTargets) return;
+
+    const r = Math.random();
+    let type = 'drop';
+    if (r < cfg.bombChance) type = 'bomb';
+    else if (r < cfg.bombChance + cfg.goldenChance) type = 'golden';
+
+    const size = type === 'golden' ? 64 : type === 'bomb' ? 58 : (44 + Math.random() * 24);
+    const arenaW = arena.clientWidth;
+    const arenaH = arena.clientHeight;
+    const pad = size / 2 + 8;
+    const x = pad + Math.random() * (arenaW - size - pad * 2);
+    const y = pad + Math.random() * (arenaH - size - pad * 2);
+
+    const el = document.createElement('div');
+    el.className = `target ${type}`;
+    el.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`;
+
+    const emoji = type === 'bomb' ? '💣' : type === 'golden' ? '⭐' : '💧';
+    el.innerHTML = `<div class="inner">${emoji}<div class="ring" style="animation-duration:${cfg.targetLife}ms"></div></div>`;
+
+    const id = ++targetIdCounter;
+    const timeout = setTimeout(() => expireTarget(el, x + size/2, y + size/2), cfg.targetLife);
+
+    state.targets.set(el, { timeout, type });
+    arena.appendChild(el);
+
+    el.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      hitTarget(el, x + size/2, y + size/2);
+    });
+  }
+
+  function hitTarget(el, cx, cy) {
+    if (!state.running || !state.targets.has(el)) return;
+    const { timeout, type } = state.targets.get(el);
+    clearTimeout(timeout);
+    state.targets.delete(el);
+    el.remove();
+
+    makeSplash(cx, cy, type);
+
+    if (type === 'bomb') {
+      state.combo = 0;
+      state.score = Math.max(0, state.score - 3);
+      $('score').textContent = state.score;
+      $('combo').textContent = '';
+      floatText(cx, cy, '-3 💣', 'bomb');
+      flashMiss();
+    } else {
+      state.combo++;
+      if (state.combo > state.bestCombo) state.bestCombo = state.combo;
+      const base = type === 'golden' ? 5 : 1;
+      const multiplier = state.combo >= 5 ? 3 : state.combo >= 3 ? 2 : 1;
+      const pts = base * multiplier;
+      state.score += pts;
+      state.hits++;
+      if (type === 'golden') state.golden++;
+
+      $('score').textContent = state.score;
+
+      const comboStr = state.combo > 1 ? ` x${state.combo}` : '';
+      $('combo').textContent = state.combo > 1 ? `x${state.combo}` : '';
+
+      floatText(cx, cy, `+${pts}${comboStr}`, type === 'golden' ? 'golden' : '');
+    }
+  }
+
+  function expireTarget(el, cx, cy) {
+    if (!state.targets.has(el)) return;
+    const { type } = state.targets.get(el);
+    state.targets.delete(el);
+    el.remove();
+
+    if (type !== 'bomb') {
+      state.misses++;
+      state.combo = 0;
+      $('combo').textContent = '';
+      floatText(cx, cy, 'Miss!', 'miss');
+      flashMiss();
+    }
+  }
+
+  // ── VISUAL FX ────────────────────────────────────────────────────────────────
+  function floatText(x, y, text, cls = '') {
+    const el = document.createElement('div');
+    el.className = `float-text ${cls}`;
+    el.textContent = text;
+    el.style.left = (x - 30) + 'px';
+    el.style.top  = (y - 20) + 'px';
+    arena.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  function makeSplash(x, y, type) {
+    const el = document.createElement('div');
+    el.className = 'splash';
+    const color = type === 'bomb' ? 'rgba(255,60,60,0.5)' : type === 'golden' ? 'rgba(255,200,0,0.5)' : 'rgba(0,180,255,0.4)';
+    el.style.cssText = `left:${x-30}px;top:${y-30}px;width:60px;height:60px;background:${color};`;
+    arena.appendChild(el);
+    setTimeout(() => el.remove(), 400);
+  }
+
+  function flashMiss() {
+    missFlash.classList.add('active');
+    setTimeout(() => missFlash.classList.remove('active'), 150);
+  }
+
+  // ── END SCREEN ───────────────────────────────────────────────────────────────
+  function showEndScreen() {
+    showScreen('end');
+    $('final-score').textContent = state.score;
+    $('stat-hits').textContent   = state.hits;
+    $('stat-misses').textContent = state.misses;
+    $('stat-golden').textContent = state.golden;
+    $('stat-combo').textContent  = state.bestCombo;
+
+    const isNewBest = saveBest(state.score);
+    const badge = document.querySelector('#end-screen #high-score-badge');
+    if (badge) {
+      if (isNewBest) {
+        badge.textContent = '🏆 New High Score!';
+        badge.style.display = 'block';
+      } else {
+        badge.textContent = `🏆 Best: ${getBest()}`;
+        badge.style.display = 'block';
+      }
+    }
+
+    let rating = '';
+    const s = state.score;
+    if (s >= 60)      rating = '<span class="emoji">🌊</span>Water Wizard!';
+    else if (s >= 40) rating = '<span class="emoji">💧</span>Hydration Hero!';
+    else if (s >= 25) rating = '<span class="emoji">👍</span>Drop Dodger!';
+    else if (s >= 10) rating = '<span class="emoji">😅</span>Stay Hydrated...';
+    else              rating = '<span class="emoji">🪣</span>Bucket List Beginner';
+    $('rating').innerHTML = rating;
+  }
+
+  $('replay-btn').addEventListener('click', () => {
+    showScreen('start');
+    refreshStartBest();
+  });
+
+  $('share-btn').addEventListener('click', () => {
+    const text = `💧 I scored ${state.score} pts on Drop It! 🌊 Can you beat me? #DropIt #ThamesWater #WaterChallenge`;
+    if (navigator.share) {
+      navigator.share({ title: 'Drop It! Game', text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).then(() => {
+        $('share-btn').textContent = '✅ Copied!';
+        setTimeout(() => { $('share-btn').textContent = '📤 Share'; }, 2000);
+      });
+    }
+  });
+
+  // ── MISS on empty arena tap ──────────────────────────────────────────────────
+  arena.addEventListener('pointerdown', (e) => {
+    if (!state.running) return;
+    if (e.target !== arena && e.target !== missFlash) return;
+    state.misses++;
+    state.combo = 0;
+    $('combo').textContent = '';
+    floatText(e.offsetX, e.offsetY, 'Miss!', 'miss');
+    flashMiss();
+  });
+
+  // ── INIT ─────────────────────────────────────────────────────────────────────
+  refreshStartBest();
+</script>
+</body>
+</html>
