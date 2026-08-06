@@ -1,0 +1,74 @@
+# Sources checked every run. Each item becomes a candidate "release/update" if it was
+# published within the last 24 hours AND hasn't been seen in a previous run.
+#
+# type: github_releases
+#   Reads https://github.com/<repo>/releases.atom. No API key needed, very reliable, works
+#   for any public repo. Best fit for labs that ship model weights / code as GitHub releases.
+#
+# type: newsapi
+#   Queries the NewsAPI.org "everything" endpoint, restricted to the given domains. Needed for
+#   labs whose own blogs are JS-rendered and/or behind bot protection (confirmed 403s when
+#   fetched directly for OpenAI, Anthropic, Google, Mistral, x.ai during setup). Skipped
+#   gracefully if NEWSAPI_KEY is not set, rather than failing the whole run.
+#
+# type: html
+#   Best-effort direct scrape (requests + BeautifulSoup, no API key). Kept here as an opt-in
+#   fallback for sites that don't block plain HTTP — try it before assuming a source needs
+#   newsapi. Prone to breaking silently if the page structure changes.
+
+sources:
+  # --- Closed-lab providers: corporate blogs, tracked via NewsAPI ---
+  - name: OpenAI
+    type: newsapi
+    query: "OpenAI (release OR launch OR update OR model OR announces)"
+    domains: openai.com
+
+  - name: Anthropic
+    type: newsapi
+    query: "Anthropic (release OR launch OR update OR model OR announces)"
+    domains: anthropic.com
+
+  - name: Google DeepMind
+    type: newsapi
+    query: "(Google DeepMind OR Gemini) (release OR launch OR update OR model OR announces)"
+    domains: blog.google,deepmind.google
+
+  - name: Meta AI
+    type: newsapi
+    query: "(Meta AI OR Llama) (release OR launch OR update OR model OR announces)"
+    domains: ai.meta.com
+
+  - name: xAI
+    type: newsapi
+    query: "(xAI OR Grok) (release OR launch OR update OR model OR announces)"
+    domains: x.ai
+
+  - name: Mistral AI
+    type: newsapi
+    query: "Mistral AI (release OR launch OR update OR model OR announces)"
+    domains: mistral.ai
+
+  # --- Labs that publish releases on GitHub: tracked via releases.atom (no key needed) ---
+  - name: DeepSeek
+    type: github_releases
+    repo: deepseek-ai/DeepSeek-V3
+
+  - name: Qwen (Alibaba)
+    type: github_releases
+    repo: QwenLM/Qwen2.5
+
+  - name: Kimi (Moonshot AI)
+    type: github_releases
+    repo: MoonshotAI/Kimi-K2
+
+  - name: Llama (Meta, GitHub)
+    type: github_releases
+    repo: meta-llama/llama-models
+
+  - name: GLM (Zhipu)
+    type: github_releases
+    repo: THUDM/GLM-4
+
+  - name: Mistral (GitHub)
+    type: github_releases
+    repo: mistralai/mistral-common
