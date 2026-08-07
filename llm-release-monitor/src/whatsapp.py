@@ -1,3 +1,4 @@
+import json
 import logging
 
 from twilio.rest import Client
@@ -6,7 +7,10 @@ from .config import Settings
 
 logger = logging.getLogger("llm_monitor.whatsapp")
 
-CHUNK_SIZE = 1500  # stay well under WhatsApp/Twilio's message length limits
+# WhatsApp template variables have a much tighter length limit than freeform messages,
+# so keep chunks conservative -- this size is used for both the template and freeform
+# paths so behavior doesn't change based on which one happens to be active.
+CHUNK_SIZE = 900
 
 
 def send_whatsapp(text: str) -> None:
@@ -19,11 +23,23 @@ def send_whatsapp(text: str) -> None:
     total = len(chunks)
     for i, chunk in enumerate(chunks, start=1):
         body = chunk if total == 1 else f"({i}/{total})\n{chunk}"
-        client.messages.create(
-            from_=Settings.twilio_whatsapp_from,
-            to=Settings.twilio_whatsapp_to,
-            body=body,
-        )
+        if Settings.twilio_content_sid:
+            # Business-initiated WhatsApp messages need a Meta-approved template outside
+            # the 24h customer-service session window -- freeform `body` sends get
+            # rejected with error 21654 once that window closes, which is the normal
+            # state for an unattended daily cron. See llm-release-monitor/README.md.
+            client.messages.create(
+                from_=Settings.twilio_whatsapp_from,
+                to=Settings.twilio_whatsapp_to,
+                content_sid=Settings.twilio_content_sid,
+                content_variables=json.dumps({"1": body}),
+            )
+        else:
+            client.messages.create(
+                from_=Settings.twilio_whatsapp_from,
+                to=Settings.twilio_whatsapp_to,
+                body=body,
+            )
         logger.info("Sent WhatsApp message %d/%d", i, total)
 
 

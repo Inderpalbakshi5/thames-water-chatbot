@@ -25,6 +25,10 @@ class Settings:
     twilio_auth_token = os.environ.get("TWILIO_AUTH_TOKEN", "")
     twilio_whatsapp_from = os.environ.get("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
     twilio_whatsapp_to = os.environ.get("TWILIO_WHATSAPP_TO", "")
+    # Content SID (starts with "HX...") of an approved WhatsApp template, e.g.
+    # "🤖 LLM Release Digest\n\n{{1}}". Required for reliable unattended daily sends --
+    # see README for why. Falls back to a freeform text send if unset.
+    twilio_content_sid = os.environ.get("TWILIO_CONTENT_SID", "")
 
     send_on_empty = os.environ.get("SEND_ON_EMPTY", "false").strip().lower() == "true"
 

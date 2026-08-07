@@ -41,6 +41,7 @@ jobs:
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
           TWILIO_WHATSAPP_TO: ${{ secrets.TWILIO_WHATSAPP_TO }}
+          TWILIO_CONTENT_SID: ${{ secrets.TWILIO_CONTENT_SID }}
           LOOKBACK_HOURS: ${{ inputs.lookback_hours || '24' }}
           IGNORE_SEEN: ${{ inputs.ignore_seen || 'false' }}
         run: python -m src.main
