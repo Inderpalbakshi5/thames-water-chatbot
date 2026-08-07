@@ -14,7 +14,13 @@ logger = logging.getLogger("llm_monitor.main")
 def run() -> None:
     sources = load_sources()
     seen = load_seen()
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=Settings.lookback_hours)
+    if Settings.ignore_seen or Settings.lookback_hours != 24:
+        logger.info(
+            "Test mode: lookback_hours=%d ignore_seen=%s (state will not be updated)",
+            Settings.lookback_hours,
+            Settings.ignore_seen,
+        )
 
     new_items = []
     for source in sources:
@@ -26,12 +32,12 @@ def run() -> None:
                 published = published.replace(tzinfo=timezone.utc)
             if published < cutoff:
                 continue
-            if item.key in seen:
+            if not Settings.ignore_seen and item.key in seen:
                 continue
             new_items.append(item)
 
     if not new_items:
-        logger.info("No new releases in the past 24 hours.")
+        logger.info("No new releases in the lookback window.")
         if Settings.send_on_empty:
             send_whatsapp("LLM release digest: no new releases in the past 24 hours.")
         return
@@ -39,6 +45,9 @@ def run() -> None:
     logger.info("Found %d new item(s), summarizing...", len(new_items))
     digest = summarize(new_items)
     send_whatsapp(digest)
+
+    if Settings.ignore_seen:
+        return  # test run -- don't let it affect what a real run reports later
 
     now_iso = datetime.now(timezone.utc).isoformat()
     for item in new_items:

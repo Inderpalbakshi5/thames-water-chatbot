@@ -4,7 +4,17 @@ on:
   schedule:
     # 07:00 UTC daily
     - cron: "0 7 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      lookback_hours:
+        description: "Hours to look back for 'new' items (default 24). Widen this for a test send."
+        required: false
+        default: "24"
+      ignore_seen:
+        description: "Ignore the already-seen-before check (test sends only -- never affects saved state)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -31,6 +41,8 @@ jobs:
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
           TWILIO_WHATSAPP_TO: ${{ secrets.TWILIO_WHATSAPP_TO }}
+          LOOKBACK_HOURS: ${{ inputs.lookback_hours || '24' }}
+          IGNORE_SEEN: ${{ inputs.ignore_seen || 'false' }}
         run: python -m src.main
 
       - name: Commit updated state
