@@ -75,7 +75,12 @@ def _fetch_newsapi(name: str, query: str, domains: str) -> list[NewsItem]:
     resp = requests.get(
         "https://newsapi.org/v2/everything", params=params, headers=HEADERS, timeout=TIMEOUT
     )
-    resp.raise_for_status()
+    try:
+        resp.raise_for_status()
+    except requests.HTTPError as exc:
+        # Re-raise without the request URL (it contains the API key as a query param) --
+        # the response body alone has NewsAPI's actual error code/message and is safe to log.
+        raise RuntimeError(f"NewsAPI HTTP {resp.status_code}: {resp.text[:300]}") from exc
     payload = resp.json()
     items = []
     for article in payload.get("articles", []):
