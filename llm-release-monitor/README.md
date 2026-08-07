@@ -41,6 +41,30 @@ run, pruned after 7 days).
    rejoining — Twilio will tell you if that happens).
 3. Note your **Account SID** and **Auth Token** from the Console dashboard.
 
+### 1b. WhatsApp message template (required for daily unattended sends)
+WhatsApp only allows **freeform** business-initiated text within 24 hours of the
+recipient's last message. A once-a-day cron almost never runs inside that window, so
+without a template, sends fail with Twilio error `21654: ContentSid Required` on any day
+you haven't personally messaged the sandbox first. This applies outside the sandbox too —
+it's a WhatsApp platform rule, not a sandbox-specific limitation.
+
+1. Twilio Console → **Messaging → Content Editor** → **Create new** → channel **WhatsApp**,
+   type **Text**.
+2. Body:
+   ```
+   🤖 LLM Release Digest
+
+   {{1}}
+   ```
+3. Submit for WhatsApp approval, category **Utility**. Approval is handled by Meta via
+   Twilio, typically within a few hours to about a day.
+4. Once approved, copy the template's **Content SID** (starts with `HX...`) — that's
+   `TWILIO_CONTENT_SID` below.
+
+Until it's approved, the bot falls back to freeform sends, which work fine for one-off
+tests right after you've messaged the sandbox, but will intermittently fail for the
+scheduled daily run.
+
 ### 2. NewsAPI.org key (optional but recommended)
 Free at [newsapi.org/register](https://newsapi.org/register). Without it, only the
 GitHub-releases sources (DeepSeek, Qwen, Kimi, Llama, GLM, Mistral) are checked.
@@ -59,6 +83,7 @@ secret), add:
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_WHATSAPP_FROM` (sandbox default: `whatsapp:+14155238886`)
 - `TWILIO_WHATSAPP_TO` (your number, e.g. `whatsapp:+919876543210`)
+- `TWILIO_CONTENT_SID` (from step 1b above, once approved — omit to fall back to freeform)
 
 **For local runs**, copy `.env.example` to `.env` and fill in the same values.
 
@@ -82,7 +107,9 @@ entries — just add a block following the existing examples.
 
 - The Twilio **sandbox** is fine for sending to your own verified number indefinitely, but
   is not meant for messaging other people — upgrading to a production WhatsApp sender
-  requires Meta business verification and message template approval.
+  requires Meta business verification (message templates are needed either way, see 1b).
+- Without an approved `TWILIO_CONTENT_SID`, the scheduled daily run will intermittently
+  fail with Twilio error 21654 once the 24h session window closes — see setup step 1b.
 - `newsapi` search is keyword-based, not a guaranteed feed of official announcements — the
   summarizer prompt is told to drop obviously irrelevant matches, but some noise is
   possible.
