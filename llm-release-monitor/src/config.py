@@ -27,3 +27,11 @@ class Settings:
     twilio_whatsapp_to = os.environ.get("TWILIO_WHATSAPP_TO", "")
 
     send_on_empty = os.environ.get("SEND_ON_EMPTY", "false").strip().lower() == "true"
+
+    # Test-mode knobs, both off by default so normal/scheduled runs are unaffected.
+    # LOOKBACK_HOURS widens the "published in the last N hours" filter beyond 24h, and
+    # IGNORE_SEEN skips the already-seen-before check -- together they let an old, real
+    # item flow through summarize -> WhatsApp for an end-to-end smoke test. Test runs never
+    # write to state/seen_items.json, so they can't affect what a real run reports later.
+    lookback_hours = int(os.environ.get("LOOKBACK_HOURS", "24"))
+    ignore_seen = os.environ.get("IGNORE_SEEN", "false").strip().lower() == "true"
